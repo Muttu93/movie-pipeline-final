@@ -1,14 +1,17 @@
 name: Frontend Continuous Integration
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      -main
   pull_request:
     branches:
       - main
+  workflow_dispatch:    
 
 defaults:
   run:
-    working-directory: frontend
+    working-directory: starter
 
 jobs:
   Lint:
@@ -21,7 +24,7 @@ jobs:
         with:
           node-version: latest
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: starter/frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Run linter
@@ -37,7 +40,7 @@ jobs:
         with:
           node-version: latest
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: starter/frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Run the tests
@@ -54,7 +57,7 @@ jobs:
         with:
           node-version: latest
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: starter/frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Build docker image
