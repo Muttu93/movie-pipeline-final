@@ -1,72 +1,114 @@
-name: Frontend Continuous Integration
+
+name: FE Conitnuous Integration Workflow
 
 on:
-  push:
-    branches:
-      -main
+  # Trigger workflow manually
+  workflow_dispatch:
+  # Trigger workflow on pull requests against main branch
   pull_request:
     branches:
       - main
-  workflow_dispatch:    
-
-defaults:
-  run:
-    working-directory: starter
+    paths: "starter/frontend/**"
 
 jobs:
-  Lint:
+  # lint job for code quality
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Node.js environment
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+      # Cache node modules to save time
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: node-modules-cache
+        with:
+          path: ~/.npm
+          # Unique key, changes if dependecies in package-lock.json changes
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - name: Install dependencies
-        run: npm ci
-        working-directory: starter/frontend
-      - name: Run linter
-        run: npm run lint
-        working-directory: starter/frontend
+        run: cd ./starter/frontend && npm ci
 
+      - name: Run code quality check
+        run: cd ./starter/frontend && npm run lint -- --fix
 
-  Test:
+  # test job for test suites
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Node.js environment
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
-        run: npm ci
-        working-directory: starter/frontend
-      - name: Run the tests
-        run: CI=true npm test
-        working-directory: starter/frontend
+      # Cache node modules to save time
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: node-modules-cache
+        with:
+          path: ~/.npm
+          # Unique key, changes if dependecies in package-lock.json changes
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
-  Build:
-    needs: [Lint, Test]
+      - name: Install dependencies
+        run: cd ./starter/frontend && npm ci
+
+      - name: Run tests
+        run: cd ./starter/frontend && npm test
+
+  build:
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Node.js environment
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: latest
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+      # Cache node modules to save time
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: node-modules-cache
+        with:
+          path: ~/.npm
+          # Unique key, changes if dependecies in package-lock.json changes
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - name: Install dependencies
-        run: npm ci
-        working-directory: starter/frontend
+        run: cd ./starter/frontend && npm ci
+
+      - name: Create environment variable
+        run: REACT_APP_MOVIE_API_URL=http://localhost:5000
+
       - name: Build docker image
-        run: docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
-      - name: Run container
-        run: docker run --name mp-frontend -p 3000:3000 -d mp-frontend
+        run: cd ./starter/frontend && docker build --build-arg=REACT_APP_MOVIE_API_URL --tag=frontend-app:latest .
+
+      - name: Run docker container
+        run: cd ./starter/frontend && docker run --name frontend-app -p 3000:3000 -d frontend-app
