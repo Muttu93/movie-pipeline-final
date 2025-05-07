@@ -134,6 +134,10 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name cluster --region us-east-1
 
+      - name: Install Kustomize
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+             export="$PATH:$HOME"
+
       - name: Set image tag to newer version
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
