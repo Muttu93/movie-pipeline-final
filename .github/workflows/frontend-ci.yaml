@@ -27,8 +27,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+        working-directory: starter/frontend
       - name: Run linter
         run: npm run lint
+        working-directory: starter/frontend
+
 
   Test:
     runs-on: ubuntu-latest
@@ -43,8 +46,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+        working-directory: starter/frontend
       - name: Run the tests
         run: CI=true npm test
+        working-directory: starter/frontend
 
   Build:
     needs: [Lint, Test]
@@ -60,6 +65,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+        working-directory: starter/frontend
       - name: Build docker image
         run: docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
       - name: Run container
