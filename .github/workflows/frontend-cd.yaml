@@ -97,7 +97,7 @@ jobs:
         run: cd ./starter/frontend && npm ci
 
       - name: Create environment variable
-        run: echo "REACT_APP_MOVIE_API_URL=http://a7f55651de45c4e53a6fc63635d18624-898139229.us-east-1.elb.amazonaws.com" >> $GITHUB_ENV
+        run: echo "REACT_APP_MOVIE_API_URL=http://ae045d39638ee4683a6a61237c04eb73-1434656050.us-east-1.elb.amazonaws.com" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
